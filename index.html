@@ -14,7 +14,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
 
     <style>
-        /* --- NEW RED THEME --- */
+        /* --- RED ENTERPRISE THEME --- */
         :root {
             --primary: #dc2626;      /* Strong Red */
             --primary-dark: #7f1d1d; /* Dark Red */
@@ -73,9 +73,11 @@
         tr:hover { background: #151515; }
         
         /* TABLE BUTTONS */
-        .tbl-btn { padding: 5px 10px; border: none; cursor: pointer; font-size: 0.7rem; font-weight: bold; margin-right: 5px; color: white; }
+        .tbl-btn { padding: 5px 10px; border: none; cursor: pointer; font-size: 0.7rem; font-weight: bold; margin-right: 5px; color: white; border-radius: 3px; }
         .btn-block { background: #7f1d1d; border: 1px solid #ef4444; }
         .btn-reset { background: #064e3b; border: 1px solid #10b981; }
+        .btn-del { background: transparent; border: 1px solid #ef4444; color: #ef4444; }
+        .btn-del:hover { background: #ef4444; color: white; }
         
         .status-active { color: #10b981; font-weight: bold; }
         .status-blocked { color: #ef4444; font-weight: bold; }
@@ -219,13 +221,11 @@
             msg.style.color = "yellow";
             msg.innerText = "Verifying Credentials...";
 
-            // Check DB for password
             db.ref('company_system/settings/password').once('value', snap => {
                 let serverPass = "BOSS"; // Default Fallback
                 if(snap.exists()) {
                     serverPass = snap.val();
                 } else {
-                    // First time setup: Set default password in DB
                     db.ref('company_system/settings/password').set("BOSS");
                 }
 
@@ -250,10 +250,8 @@
             const limit = parseInt(document.getElementById('plan-devices').value);
             const note = document.getElementById('client-name').value || "Client";
             
-            // CUSTOM PREFIX LOGIC
             let prefix = document.getElementById('key-prefix').value.trim().toUpperCase();
-            if(!prefix) prefix = "ROHAN"; // Default if empty
-            // Remove special chars
+            if(!prefix) prefix = "ROHAN"; 
             prefix = prefix.replace(/[^A-Z0-9]/g, '');
 
             const randomPart = Math.random().toString(36).substr(2, 5).toUpperCase();
@@ -269,8 +267,8 @@
                 expiry: expiry,
                 deviceLimit: limit,
                 status: "Active",
-                devices: {}, // FIXED: Empty list for Multi-Device support
-                adminDeviceId: "" // Kept for backward compatibility
+                devices: {}, 
+                adminDeviceId: "" 
             };
 
             db.ref('company_system/licenses/' + key).set(licenseData)
@@ -324,7 +322,10 @@
                     // Count Connected Devices
                     let deviceCount = 0;
                     if(d.devices) deviceCount = Object.keys(d.devices).length;
-                    else if(d.adminDeviceId) deviceCount = 1; // Old logic support
+                    else if(d.adminDeviceId) deviceCount = 1;
+
+                    // Parent Lock Status (Optional Visual)
+                    const parentLock = d.claimedByAdmin ? '<i class="fas fa-lock" style="color:orange" title="Parent Logged In"></i>' : '<i class="fas fa-lock-open" style="color:gray" title="Open"></i>';
 
                     const row = `
                         <tr>
@@ -332,11 +333,12 @@
                             <td>${d.clientName}</td>
                             <td>${expDate}</td>
                             <td class="${statusClass}">${d.status}</td>
-                            <td><span style="color:#aaa;">${deviceCount} / ${d.deviceLimit}</span></td>
+                            <td><span style="color:#aaa;">${deviceCount} / ${d.deviceLimit}</span> ${parentLock}</td>
                             <td>
                                 <button class="tbl-btn btn-block" onclick="updateStatus('${d.key}', 'Blocked')">BLOCK</button>
                                 <button class="tbl-btn btn-reset" onclick="resetDevice('${d.key}')">RESET</button>
                                 <button class="tbl-btn" style="background:#333;" onclick="extendTime('${d.key}')">+30D</button>
+                                <button class="tbl-btn btn-del" onclick="deleteLicense('${d.key}')"><i class="fas fa-trash"></i></button>
                             </td>
                         </tr>
                     `;
@@ -356,11 +358,24 @@
             }
         }
 
+        // --- FULL RESET (FIXED) ---
         function resetDevice(key) {
-            if(confirm(`Remove ALL devices from ${key}?`)) {
+            if(confirm(`FULL RESET for ${key}?\n\nThis will:\n1. Disconnect all Child Devices.\n2. Unlock Parent Access (allow new login).`)) {
+                // Clear Child Devices
                 db.ref(`company_system/licenses/${key}/devices`).remove();
-                db.ref(`company_system/licenses/${key}/adminDeviceId`).set(""); // Clear old
-                alert("Devices Cleared.");
+                db.ref(`company_system/licenses/${key}/adminDeviceId`).remove();
+                // Clear Parent Lock (Crucial Fix)
+                db.ref(`company_system/licenses/${key}/claimedByAdmin`).remove();
+                alert("Key is now BRAND NEW. Parent can login on new device.");
+            }
+        }
+
+        // --- DELETE LICENSE (NEW) ---
+        function deleteLicense(key) {
+            const userInput = prompt(`⚠️ DANGER ZONE ⚠️\n\nTo DELETE ${key} permanently, type "DELETE" below:\n(This cannot be undone)`);
+            if(userInput === "DELETE") {
+                db.ref(`company_system/licenses/${key}`).remove();
+                alert("License Deleted Successfully.");
             }
         }
 
