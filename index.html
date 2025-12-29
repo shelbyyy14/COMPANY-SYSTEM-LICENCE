@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ROHAN ENTERPRISE | SYSTEM CONTROLLER</title>
+    <title>ROHAN SECURITY | COMMAND CENTER</title>
 
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
@@ -14,67 +14,71 @@
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
 
     <style>
+        /* --- NEW RED THEME --- */
         :root {
-            --gold: #d4af37;
-            --gold-dark: #aa8c2c;
-            --black: #0a0a0a;
+            --primary: #dc2626;      /* Strong Red */
+            --primary-dark: #7f1d1d; /* Dark Red */
+            --black: #050505;
             --panel: #111;
-            --text-gray: #ccc;
-            --danger: #ef4444;
-            --success: #10b981;
+            --text-gray: #9ca3af;
+            --white: #f3f4f6;
+            --border: 1px solid #333;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Roboto', sans-serif; outline: none; }
-        body { background-color: var(--black); color: var(--gold); height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+        body { background-color: var(--black); color: var(--white); height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
 
         /* --- LOGIN SCREEN --- */
-        #login-screen { position: fixed; inset: 0; background: #050505; z-index: 9999; display: flex; justify-content: center; align-items: center; }
-        .login-card { border: 1px solid var(--gold); padding: 40px; width: 400px; text-align: center; background: #000; box-shadow: 0 0 20px rgba(212, 175, 55, 0.2); }
-        .master-input { background: #111; border: 1px solid #333; color: white; padding: 12px; width: 100%; margin: 20px 0; text-align: center; font-size: 1.1rem; }
-        .gold-btn { background: linear-gradient(45deg, var(--gold-dark), var(--gold)); color: black; border: none; padding: 12px 25px; font-weight: bold; cursor: pointer; text-transform: uppercase; width: 100%; letter-spacing: 1px; transition: 0.3s; }
-        .gold-btn:hover { transform: scale(1.02); box-shadow: 0 0 15px var(--gold); }
+        #login-screen { position: fixed; inset: 0; background: #000; z-index: 9999; display: flex; justify-content: center; align-items: center; background-image: radial-gradient(#220000 20%, #000 80%); }
+        .login-card { border: 1px solid var(--primary); padding: 40px; width: 400px; text-align: center; background: #0a0a0a; box-shadow: 0 0 30px rgba(220, 38, 38, 0.2); }
+        .master-input { background: #111; border: 1px solid #333; color: white; padding: 12px; width: 100%; margin: 20px 0; text-align: center; font-size: 1.1rem; transition: 0.3s; }
+        .master-input:focus { border-color: var(--primary); box-shadow: 0 0 10px var(--primary-dark); }
+        
+        .action-btn, .theme-btn { background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white; border: none; padding: 12px 25px; font-weight: bold; cursor: pointer; text-transform: uppercase; width: 100%; letter-spacing: 1px; transition: 0.3s; }
+        .theme-btn:hover { transform: translateY(-2px); box-shadow: 0 0 20px var(--primary); }
 
         /* --- MAIN APP --- */
         #main-app { display: none; height: 100%; display: flex; }
         
         /* SIDEBAR */
-        .sidebar { width: 250px; background: var(--panel); border-right: 1px solid #333; display: flex; flex-direction: column; }
-        .brand { font-family: 'Cinzel', serif; font-size: 1.5rem; text-align: center; padding: 30px 0; border-bottom: 1px solid #333; color: white; }
-        .brand span { color: var(--gold); }
+        .sidebar { width: 250px; background: var(--panel); border-right: var(--border); display: flex; flex-direction: column; }
+        .brand { font-family: 'Cinzel', serif; font-size: 1.6rem; text-align: center; padding: 30px 0; border-bottom: var(--border); color: white; text-shadow: 0 0 10px var(--primary); }
+        .brand span { color: var(--primary); }
         
-        .menu-item { padding: 15px 25px; cursor: pointer; color: var(--text-gray); display: flex; align-items: center; gap: 15px; transition: 0.3s; }
-        .menu-item:hover, .menu-item.active { background: rgba(212, 175, 55, 0.1); color: var(--gold); border-left: 4px solid var(--gold); }
+        .menu-item { padding: 15px 25px; cursor: pointer; color: var(--text-gray); display: flex; align-items: center; gap: 15px; transition: 0.3s; border-left: 3px solid transparent; }
+        .menu-item:hover, .menu-item.active { background: rgba(220, 38, 38, 0.05); color: var(--primary); border-left: 3px solid var(--primary); }
         
         /* CONTENT */
-        .content { flex: 1; padding: 30px; overflow-y: auto; background: #0f0f0f; }
+        .content { flex: 1; padding: 30px; overflow-y: auto; background: #080808; }
         
-        /* CARDS */
+        /* STAT CARDS */
         .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px; }
-        .stat-card { background: var(--panel); border: 1px solid #333; padding: 20px; border-radius: 5px; }
-        .stat-card h3 { color: var(--text-gray); font-size: 0.9rem; margin-bottom: 10px; }
-        .stat-card h1 { color: var(--gold); font-size: 2rem; font-family: 'Cinzel', serif; }
+        .stat-card { background: var(--panel); border: var(--border); padding: 20px; border-radius: 4px; position: relative; overflow: hidden; }
+        .stat-card::after { content:''; position: absolute; top:0; left:0; width: 4px; height: 100%; background: var(--primary); }
+        .stat-card h3 { color: var(--text-gray); font-size: 0.8rem; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 1px; }
+        .stat-card h1 { color: white; font-size: 2.2rem; font-family: 'Cinzel', serif; }
 
-        /* LICENSE GENERATOR */
-        .gen-box { background: var(--panel); border: 1px solid var(--gold); padding: 25px; margin-bottom: 30px; display: flex; gap: 15px; align-items: end; }
-        .input-group { flex: 1; }
-        .input-group label { display: block; color: var(--text-gray); margin-bottom: 5px; font-size: 0.8rem; }
-        .form-control { width: 100%; padding: 10px; background: #222; border: 1px solid #444; color: white; }
+        /* FORMS */
+        .gen-box { background: var(--panel); border: 1px solid var(--primary-dark); padding: 25px; margin-bottom: 30px; display: flex; gap: 15px; align-items: end; flex-wrap: wrap; }
+        .input-group { flex: 1; min-width: 200px; }
+        .input-group label { display: block; color: var(--primary); margin-bottom: 8px; font-size: 0.8rem; font-weight: bold; }
+        .form-control { width: 100%; padding: 10px; background: #1a1a1a; border: 1px solid #333; color: white; }
+        .form-control:focus { border-color: var(--primary); }
         
         /* TABLE */
-        .table-container { background: var(--panel); border: 1px solid #333; border-radius: 5px; overflow: hidden; }
+        .table-container { background: var(--panel); border: var(--border); border-radius: 4px; overflow: hidden; }
         table { width: 100%; border-collapse: collapse; }
-        th { background: #222; color: var(--gold); padding: 15px; text-align: left; font-size: 0.85rem; text-transform: uppercase; }
-        td { padding: 15px; border-bottom: 1px solid #222; color: #ddd; font-size: 0.9rem; }
-        tr:hover { background: #1a1a1a; }
+        th { background: #1a1a1a; color: var(--primary); padding: 15px; text-align: left; font-size: 0.8rem; text-transform: uppercase; border-bottom: 1px solid var(--primary-dark); }
+        td { padding: 15px; border-bottom: 1px solid #222; color: #ccc; font-size: 0.9rem; }
+        tr:hover { background: #151515; }
         
-        /* ACTION BUTTONS */
-        .action-btn { padding: 5px 10px; border: none; cursor: pointer; font-size: 0.75rem; font-weight: bold; margin-right: 5px; }
-        .btn-block { background: rgba(239, 68, 68, 0.2); color: var(--danger); border: 1px solid var(--danger); }
-        .btn-reset { background: rgba(16, 185, 129, 0.2); color: var(--success); border: 1px solid var(--success); }
-        .btn-extend { background: rgba(212, 175, 55, 0.2); color: var(--gold); border: 1px solid var(--gold); }
-
-        .status-active { color: var(--success); }
-        .status-blocked { color: var(--danger); }
+        /* TABLE BUTTONS */
+        .tbl-btn { padding: 5px 10px; border: none; cursor: pointer; font-size: 0.7rem; font-weight: bold; margin-right: 5px; color: white; }
+        .btn-block { background: #7f1d1d; border: 1px solid #ef4444; }
+        .btn-reset { background: #064e3b; border: 1px solid #10b981; }
+        
+        .status-active { color: #10b981; font-weight: bold; }
+        .status-blocked { color: #ef4444; font-weight: bold; }
         .status-expired { color: gray; }
 
     </style>
@@ -84,10 +88,12 @@
     <!-- 1. LOGIN -->
     <div id="login-screen">
         <div class="login-card">
-            <h1 style="font-family:'Cinzel'; margin-bottom:10px;">ROHAN ENTERPRISE</h1>
-            <p style="color:gray; font-size:0.8rem; margin-bottom:20px;">SYSTEM CONTROL AUTHORIZATION</p>
-            <input type="password" id="master-pass" class="master-input" placeholder="MASTER KEY">
-            <button onclick="login()" class="gold-btn">ACCESS PANEL</button>
+            <h1 style="font-family:'Cinzel'; margin-bottom:5px;">ROHAN<br><span style="color:var(--primary)">SECURITY</span></h1>
+            <p style="color:gray; font-size:0.7rem; margin-bottom:20px; letter-spacing: 2px;">RESTRICTED ACCESS ONLY</p>
+            
+            <input type="password" id="master-pass" class="master-input" placeholder="ENTER ACCESS CODE">
+            <button onclick="login()" class="theme-btn">AUTHENTICATE</button>
+            <p id="login-msg" style="margin-top:15px; font-size:0.8rem; height:20px;"></p>
         </div>
     </div>
 
@@ -96,51 +102,55 @@
         <div class="sidebar">
             <div class="brand">ROHAN <span>CORP</span></div>
             <div class="menu-item active" onclick="showTab('dashboard')"><i class="fas fa-chart-pie"></i> Dashboard</div>
-            <div class="menu-item" onclick="showTab('licenses')"><i class="fas fa-key"></i> License Manager</div>
-            <div class="menu-item" onclick="showTab('settings')"><i class="fas fa-cogs"></i> System Settings</div>
-            <div class="menu-item" style="margin-top:auto; color:var(--danger);" onclick="location.reload()"><i class="fas fa-sign-out-alt"></i> Secure Logout</div>
+            <div class="menu-item" onclick="showTab('licenses')"><i class="fas fa-key"></i> License Center</div>
+            <div class="menu-item" onclick="showTab('settings')"><i class="fas fa-satellite-dish"></i> Broadcast & Settings</div>
+            <div class="menu-item" style="margin-top:auto; color:var(--primary);" onclick="location.reload()"><i class="fas fa-power-off"></i> Terminate Session</div>
         </div>
 
         <div class="content">
             
             <!-- DASHBOARD TAB -->
             <div id="tab-dashboard" class="page">
-                <h2 style="font-family:'Cinzel'; margin-bottom:20px;">BUSINESS OVERVIEW</h2>
+                <h2 style="font-family:'Cinzel'; margin-bottom:20px;">SYSTEM OVERVIEW</h2>
                 <div class="stats-grid">
-                    <div class="stat-card"><h3>TOTAL LICENSES</h3><h1 id="total-lic">0</h1></div>
-                    <div class="stat-card"><h3>ACTIVE USERS</h3><h1 id="active-lic" style="color:var(--success)">0</h1></div>
-                    <div class="stat-card"><h3>REVENUE (EST)</h3><h1 id="revenue">₹0</h1></div>
+                    <div class="stat-card"><h3>TOTAL KEYS</h3><h1 id="total-lic">0</h1></div>
+                    <div class="stat-card"><h3>ONLINE USERS</h3><h1 id="active-lic" style="color:var(--primary)">0</h1></div>
+                    <div class="stat-card"><h3>REVENUE</h3><h1 id="revenue">₹0</h1></div>
                 </div>
             </div>
 
             <!-- LICENSES TAB -->
             <div id="tab-licenses" class="page" style="display:none;">
-                <h2 style="font-family:'Cinzel'; margin-bottom:20px;">LICENSE GENERATOR</h2>
+                <h2 style="font-family:'Cinzel'; margin-bottom:20px;">KEY GENERATION PROTOCOL</h2>
                 
                 <!-- Generator -->
                 <div class="gen-box">
                     <div class="input-group">
-                        <label>Plan Validity</label>
+                        <label>KEY PREFIX (Name)</label>
+                        <input type="text" id="key-prefix" class="form-control" placeholder="e.g. ROHAN (Default)">
+                    </div>
+                    <div class="input-group">
+                        <label>VALIDITY PERIOD</label>
                         <select id="plan-validity" class="form-control">
                             <option value="30">1 Month (30 Days)</option>
-                            <option value="180">6 Months (180 Days)</option>
-                            <option value="365">1 Year (365 Days)</option>
-                            <option value="3650">Lifetime (10 Years)</option>
+                            <option value="180">6 Months</option>
+                            <option value="365">1 Year</option>
+                            <option value="3650">LIFETIME</option>
                         </select>
                     </div>
                     <div class="input-group">
-                        <label>Device Limit (Children)</label>
+                        <label>DEVICE LIMIT</label>
                         <select id="plan-devices" class="form-control">
-                            <option value="1">1 Child</option>
-                            <option value="2">2 Children</option>
-                            <option value="5">5 Children (Family)</option>
+                            <option value="1">1 Device</option>
+                            <option value="2">2 Devices</option>
+                            <option value="5">5 Devices (Family)</option>
                         </select>
                     </div>
                     <div class="input-group">
-                        <label>Customer Name (Optional)</label>
-                        <input type="text" id="client-name" class="form-control" placeholder="e.g. Rahul Singh">
+                        <label>CLIENT NOTE</label>
+                        <input type="text" id="client-name" class="form-control" placeholder="Optional">
                     </div>
-                    <button onclick="generateLicense()" class="gold-btn" style="width:auto;">GENERATE KEY</button>
+                    <button onclick="generateLicense()" class="theme-btn" style="width:auto; margin-bottom:0;">CREATE KEY</button>
                 </div>
 
                 <!-- List -->
@@ -149,15 +159,15 @@
                         <thead>
                             <tr>
                                 <th>License Key</th>
-                                <th>Client</th>
+                                <th>Note</th>
                                 <th>Expiry</th>
                                 <th>Status</th>
-                                <th>Admin Device</th>
-                                <th>Actions</th>
+                                <th>Devices</th>
+                                <th>Controls</th>
                             </tr>
                         </thead>
                         <tbody id="license-table">
-                            <tr><td colspan="6" style="text-align:center;">Loading Data...</td></tr>
+                            <tr><td colspan="6" style="text-align:center;">Loading Database...</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -165,9 +175,22 @@
 
             <!-- SETTINGS TAB -->
             <div id="tab-settings" class="page" style="display:none;">
-                <h2 style="font-family:'Cinzel'; margin-bottom:20px;">SYSTEM SETTINGS</h2>
+                <h2 style="font-family:'Cinzel'; margin-bottom:20px;">GLOBAL COMMANDS</h2>
+                
+                <div class="gen-box" style="border-color: var(--primary);">
+                    <div class="input-group" style="flex: 3;">
+                        <label><i class="fas fa-broadcast-tower"></i> PUSH SYSTEM UPDATE TO ADMIN PANELS</label>
+                        <input type="text" id="update-msg" class="form-control" placeholder="Enter message (e.g. 'System Maintenance in 10 mins')">
+                    </div>
+                    <button onclick="sendGlobalUpdate()" class="theme-btn" style="flex: 1;">SEND BROADCAST</button>
+                </div>
+
                 <div class="stat-card">
-                    <p>Master Password Reset functionality coming soon.</p>
+                    <h3 style="color:var(--primary);">ADMIN CONFIGURATION</h3>
+                    <p style="margin-top:10px; font-size:0.9rem; color:#888;">
+                        Master Password: <strong style="color:white;">[SECURE IN DATABASE]</strong><br>
+                        To change password, edit Firebase Database at: <code>company_system/settings/password</code>
+                    </p>
                 </div>
             </div>
 
@@ -188,51 +211,92 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        // --- 1. LOGIN LOGIC ---
+        // --- 1. SECURE LOGIN LOGIC ---
         function login() {
             const p = document.getElementById('master-pass').value;
-            // HARDCODED MASTER PASSWORD (Change this later)
-            if(p === "BOSS") {
-                document.getElementById('login-screen').style.display = 'none';
-                document.getElementById('main-app').style.display = 'flex';
-                loadLicenses();
-            } else {
-                alert("INVALID MASTER KEY");
-            }
+            const msg = document.getElementById('login-msg');
+            
+            msg.style.color = "yellow";
+            msg.innerText = "Verifying Credentials...";
+
+            // Check DB for password
+            db.ref('company_system/settings/password').once('value', snap => {
+                let serverPass = "BOSS"; // Default Fallback
+                if(snap.exists()) {
+                    serverPass = snap.val();
+                } else {
+                    // First time setup: Set default password in DB
+                    db.ref('company_system/settings/password').set("BOSS");
+                }
+
+                if(p === serverPass) {
+                    msg.style.color = "#10b981";
+                    msg.innerText = "ACCESS GRANTED";
+                    setTimeout(() => {
+                        document.getElementById('login-screen').style.display = 'none';
+                        document.getElementById('main-app').style.display = 'flex';
+                        loadLicenses();
+                    }, 800);
+                } else {
+                    msg.style.color = "#ef4444";
+                    msg.innerText = "ACCESS DENIED: INVALID CODE";
+                }
+            });
         }
 
-        // --- 2. GENERATE LICENSE ---
+        // --- 2. GENERATE CUSTOM LICENSE ---
         function generateLicense() {
             const days = parseInt(document.getElementById('plan-validity').value);
             const limit = parseInt(document.getElementById('plan-devices').value);
-            const name = document.getElementById('client-name').value || "Unknown";
+            const note = document.getElementById('client-name').value || "Client";
             
-            // Create Unique Key (e.g., ROHAN-X92A)
-            const key = "ROHAN-" + Math.random().toString(36).substr(2, 6).toUpperCase();
+            // CUSTOM PREFIX LOGIC
+            let prefix = document.getElementById('key-prefix').value.trim().toUpperCase();
+            if(!prefix) prefix = "ROHAN"; // Default if empty
+            // Remove special chars
+            prefix = prefix.replace(/[^A-Z0-9]/g, '');
+
+            const randomPart = Math.random().toString(36).substr(2, 5).toUpperCase();
+            const key = `${prefix}-${randomPart}`;
             
             const now = Date.now();
             const expiry = now + (days * 24 * 60 * 60 * 1000);
             
             const licenseData = {
                 key: key,
-                clientName: name,
+                clientName: note,
                 created: now,
                 expiry: expiry,
                 deviceLimit: limit,
                 status: "Active",
-                adminDeviceId: "", // Will bind on first login
-                adminPassword: "admin" // Default password for parent
+                devices: {}, // FIXED: Empty list for Multi-Device support
+                adminDeviceId: "" // Kept for backward compatibility
             };
 
-            // Save to Firebase
             db.ref('company_system/licenses/' + key).set(licenseData)
             .then(() => {
-                alert("NEW LICENSE GENERATED:\n\nKEY: " + key + "\n\nGive this key to the customer.");
-                loadLicenses(); // Refresh UI
+                alert(`KEY GENERATED: ${key}`);
+                loadLicenses();
             });
         }
 
-        // --- 3. LOAD LICENSES (TABLE) ---
+        // --- 3. SEND GLOBAL UPDATE ---
+        function sendGlobalUpdate() {
+            const msg = document.getElementById('update-msg').value;
+            if(!msg) return alert("Please enter a message");
+            
+            if(confirm("Send this message to ALL Admin Panels?")) {
+                db.ref('company_system/global_broadcast').set({
+                    message: msg,
+                    timestamp: Date.now(),
+                    id: Math.random().toString(36).substr(2, 9)
+                });
+                alert("Update Signal Sent!");
+                document.getElementById('update-msg').value = "";
+            }
+        }
+
+        // --- 4. LOAD LICENSES ---
         function loadLicenses() {
             db.ref('company_system/licenses').on('value', snap => {
                 const tbody = document.getElementById('license-table');
@@ -242,7 +306,7 @@
                 let active = 0;
 
                 if(!snap.exists()) {
-                    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">No Licenses Found</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">No Keys Found</td></tr>';
                     return;
                 }
 
@@ -250,17 +314,17 @@
                     const d = child.val();
                     total++;
                     
-                    // Check Status
                     let statusClass = "status-active";
                     if(d.status === "Blocked") statusClass = "status-blocked";
                     if(Date.now() > d.expiry) { d.status = "Expired"; statusClass = "status-expired"; }
                     if(d.status === "Active") active++;
 
-                    // Format Date
                     const expDate = new Date(d.expiry).toLocaleDateString();
                     
-                    // Hardware ID Text
-                    const hwId = d.adminDeviceId ? `<span style="color:#aaa;font-size:0.7rem;">LOCKED: ${d.adminDeviceId.substr(0,8)}...</span>` : `<span style="color:#10b981;">[ OPEN ]</span>`;
+                    // Count Connected Devices
+                    let deviceCount = 0;
+                    if(d.devices) deviceCount = Object.keys(d.devices).length;
+                    else if(d.adminDeviceId) deviceCount = 1; // Old logic support
 
                     const row = `
                         <tr>
@@ -268,25 +332,24 @@
                             <td>${d.clientName}</td>
                             <td>${expDate}</td>
                             <td class="${statusClass}">${d.status}</td>
-                            <td>${hwId}</td>
+                            <td><span style="color:#aaa;">${deviceCount} / ${d.deviceLimit}</span></td>
                             <td>
-                                <button class="action-btn btn-block" onclick="updateStatus('${d.key}', 'Blocked')">BLOCK</button>
-                                <button class="action-btn btn-reset" onclick="resetDevice('${d.key}')">RESET ID</button>
-                                <button class="action-btn btn-extend" onclick="extendTime('${d.key}')">+30D</button>
+                                <button class="tbl-btn btn-block" onclick="updateStatus('${d.key}', 'Blocked')">BLOCK</button>
+                                <button class="tbl-btn btn-reset" onclick="resetDevice('${d.key}')">RESET</button>
+                                <button class="tbl-btn" style="background:#333;" onclick="extendTime('${d.key}')">+30D</button>
                             </td>
                         </tr>
                     `;
                     tbody.innerHTML += row;
                 });
 
-                // Update Stats
                 document.getElementById('total-lic').innerText = total;
                 document.getElementById('active-lic').innerText = active;
-                document.getElementById('revenue').innerText = "₹" + (total * 500); // Dummy calc
+                document.getElementById('revenue').innerText = "₹" + (total * 500); 
             });
         }
 
-        // --- 4. ACTIONS ---
+        // --- ACTIONS ---
         function updateStatus(key, status) {
             if(confirm(`Set status of ${key} to ${status}?`)) {
                 db.ref(`company_system/licenses/${key}/status`).set(status);
@@ -294,24 +357,23 @@
         }
 
         function resetDevice(key) {
-            if(confirm(`Reset Device Lock for ${key}? Parent can login on new device.`)) {
-                db.ref(`company_system/licenses/${key}/adminDeviceId`).set("");
-                alert("Device Unlocked. Parent can login now.");
+            if(confirm(`Remove ALL devices from ${key}?`)) {
+                db.ref(`company_system/licenses/${key}/devices`).remove();
+                db.ref(`company_system/licenses/${key}/adminDeviceId`).set(""); // Clear old
+                alert("Devices Cleared.");
             }
         }
 
         function extendTime(key) {
-            // Get current expiry first
             db.ref(`company_system/licenses/${key}/expiry`).once('value', snap => {
                 const currentExp = snap.val();
-                const newExp = currentExp + (30 * 24 * 60 * 60 * 1000); // Add 30 days
+                const newExp = currentExp + (30 * 24 * 60 * 60 * 1000); 
                 db.ref(`company_system/licenses/${key}/expiry`).set(newExp);
-                db.ref(`company_system/licenses/${key}/status`).set("Active"); // Reactivate if expired
-                alert("Added 30 Days Validity.");
+                db.ref(`company_system/licenses/${key}/status`).set("Active");
+                alert("Extended +30 Days");
             });
         }
 
-        // --- TABS ---
         function showTab(id) {
             document.querySelectorAll('.page').forEach(e => e.style.display = 'none');
             document.getElementById('tab-'+id).style.display = 'block';
